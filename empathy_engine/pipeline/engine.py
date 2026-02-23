@@ -18,7 +18,6 @@ from empathy_engine.api.schemas import (
 )
 from empathy_engine.config.settings import get_settings
 from empathy_engine.context.conversation import ConversationContextManager
-from empathy_engine.nlp.emotion_correction import correct_emotion_prediction
 from empathy_engine.nlp.emotion_model import EmotionPrediction, get_emotion_detector
 from empathy_engine.nlp.intensity import calculate_intensity
 from empathy_engine.nlp.sarcasm import estimate_sarcasm_score
@@ -112,16 +111,7 @@ class SynthesisPipeline:
                 primary = EmotionPrediction(label="optimism", score=0.3)
                 secondary = None
             else:
-                # Apply rule-based corrections to improve accuracy
-                corrected_primary = correct_emotion_prediction(sent, preds, min_confidence=0.15)
-                if corrected_primary:
-                    # Find secondary from remaining predictions
-                    remaining = [p for p in preds if p.label.lower() != corrected_primary.label.lower()]
-                    _, secondary = select_primary_secondary(remaining)
-                    primary = corrected_primary
-                else:
-                    # Fallback to original selection if correction failed
-                    primary, secondary = select_primary_secondary(preds)
+                primary, secondary = select_primary_secondary(preds)
 
             all_emotions_flat.extend(preds)
 
@@ -223,14 +213,7 @@ class SynthesisPipeline:
         ]
 
         # Global primary/secondary emotions across the whole text for debug.
-        # Apply correction to global emotion as well for consistency
-        corrected_global = correct_emotion_prediction(text, all_emotions_flat, min_confidence=0.15)
-        if corrected_global:
-            remaining_global = [e for e in all_emotions_flat if e.label.lower() != corrected_global.label.lower()]
-            global_primary = corrected_global
-            _, global_secondary = select_primary_secondary(remaining_global)
-        else:
-            global_primary, global_secondary = select_primary_secondary(all_emotions_flat)
+        global_primary, global_secondary = select_primary_secondary(all_emotions_flat)
 
         debug: DebugInfo | None = None
         if request.return_debug:

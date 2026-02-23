@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import List
+from typing import Dict, List
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
 
@@ -12,6 +12,31 @@ from empathy_engine.utils.logging import get_logger
 
 
 logger = get_logger(__name__)
+
+# Mapping from raw model labels to normalized emotion labels used by voice params
+EMOTION_LABEL_MAPPING: Dict[str, str] = {
+    # Direct mappings (model labels that match voice params)
+    "anger": "anger",
+    "joy": "joy",
+    "sadness": "sadness",
+    "fear": "fear",
+    "disgust": "disgust",
+    "surprise": "surprise",
+    "neutral": "calm",
+    # Aliases for common variations
+    "happy": "joy",
+    "excited": "excitement",
+    "confident": "optimism",
+    "worried": "fear",
+    "anxious": "fear",
+    "depressed": "sadness",
+}
+
+
+def normalize_emotion_label(label: str) -> str:
+    """Normalize a raw emotion label to the standard set used by voice params."""
+    normalized = label.lower().strip()
+    return EMOTION_LABEL_MAPPING.get(normalized, "calm")
 
 
 @dataclass
@@ -59,8 +84,9 @@ class EmotionDetector:
             raise EmotionModelError(msg) from exc
 
         # outputs is a list of dicts with keys: label, score
+        # Normalize labels to match voice params expectations
         return [
-            EmotionPrediction(label=o["label"], score=float(o["score"]))
+            EmotionPrediction(label=normalize_emotion_label(o["label"]), score=float(o["score"]))
             for o in outputs
         ]
 
@@ -77,7 +103,7 @@ class EmotionDetector:
         results: List[List[EmotionPrediction]] = []
         for item in raw_outputs:
             preds = [
-                EmotionPrediction(label=o["label"], score=float(o["score"]))
+                EmotionPrediction(label=normalize_emotion_label(o["label"]), score=float(o["score"]))
                 for o in item
             ]
             results.append(preds)

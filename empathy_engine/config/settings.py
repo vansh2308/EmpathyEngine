@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     api_port: int = 8000
 
     # NLP models
-    emotion_model_name: str = "cardiffnlp/twitter-roberta-base-emotion"
+    emotion_model_name: str = "j-hartmann/emotion-english-distilroberta-base"
     spacy_model_name: str = "en_core_web_sm"
     embedding_model_name: str = "all-MiniLM-L6-v2"
 

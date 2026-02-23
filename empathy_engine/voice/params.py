@@ -59,7 +59,7 @@ BASE_EMOTION_PARAMS: Dict[str, VocalParams] = {
     # Negative - more pronounced
     "sadness": _vp(rate=0.6, pitch=-0.25, volume_db=-6.0, pause_s=0.6, breathiness=0.2, resonance=0.3),
     "fear": _vp(rate=1.4, pitch=0.25, volume_db=3.0, pause_s=0.5, tremor=0.3, breathiness=0.15),
-    "anger": _vp(rate=1.7, pitch=0.1, volume_db=10.0, pause_s=0.15, tremor=0.2, resonance=0.8),
+    "anger": _vp(rate=1.7, pitch=0.5, volume_db=10.0, pause_s=0.15, tremor=0.2, resonance=0.8),
     "disgust": _vp(rate=0.85, pitch=-0.15, volume_db=2.0, pause_s=0.4, breathiness=0.1),
     "pessimism": _vp(rate=0.75, pitch=-0.2, volume_db=-3.0, pause_s=0.55, resonance=0.35),
     # Lower arousal - more distinct
