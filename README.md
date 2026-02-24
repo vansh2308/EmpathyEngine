@@ -2,8 +2,10 @@
 
 EmpathyEngine is an emotion-aware text-to-speech (TTS) service. It detects nuanced emotions in text, maps them to vocal parameters such as rate, pitch, volume, and pauses, and then synthesizes expressive audio via a TTS backend (e.g. ElevenLabs).
 
-### Features
+<img src="./static/hero.png" width="100%"/>
 
+
+### Features
 - **Multi-label emotion detection** using a RoBERTa-based model (28 emotions).
 - **Context-enhanced NLP** with spaCy (NER, intensifiers, contrastive conjunctions, etc.).
 - **Emotion intensity scaling** based on punctuation, capitalization, adverbs, and model confidence.
@@ -15,8 +17,6 @@ EmpathyEngine is an emotion-aware text-to-speech (TTS) service. It detects nuanc
 
 ### High-level architecture
 
-The service follows the architecture described in `EmpathyEngine.pdf`:
-
 1. **Input layer**: FastAPI endpoint accepting text (and optional session/voice hints).
 2. **Emotion pipeline**: RoBERTa-based emotion detection + spaCy-based context analysis.
 3. **Vocal parameter modulation**: map emotions to vocal parameters and scale based on intensity.
@@ -24,16 +24,11 @@ The service follows the architecture described in `EmpathyEngine.pdf`:
 5. **Vector DB**: FAISS index storing text, emotions, and voice parameters for context reuse.
 
 ### Getting started
-
-1. Create and activate a Python 3.11+ virtual environment.
-2. Copy your environment file and fill in keys:
-
-```bash
-cp .env.example .env  # if you maintain one
+```zsh
+git clone --recurse-submodules https://github.com/vansh2308/EmpathyEngine.git
 ```
-
-At minimum you should define:
-
+1. Create and activate a Python 3.11+ virtual environment.
+2. Copy your environment file and fill in keys: 
 - `EMPATHY_ENV` (e.g. `development`)
 - `EMPATHY_LOG_LEVEL` (e.g. `INFO`)
 - `EMPATHY_ELEVENLABS_API_KEY` (required for real audio)
@@ -42,6 +37,7 @@ At minimum you should define:
 3. Install dependencies with Poetry:
 
 ```bash
+poetry lock
 poetry install
 poetry run python -m spacy download en_core_web_sm
 ```
@@ -52,10 +48,18 @@ poetry run python -m spacy download en_core_web_sm
 poetry run uvicorn empathy_engine.api.main:app --reload
 ```
 
-5. Open the interactive docs at:
+5. Run demo examples:
+```zsh
+poetry run python demos/demo_walkthroughs.py
+```
+
+
+5. Access web client:
 
 ```bash
-http://localhost:8000/docs
+cd ./client
+npm i
+npm run dev
 ```
 
 ### Project layout
@@ -68,14 +72,7 @@ http://localhost:8000/docs
   - `context/` – FAISS vector store, embeddings, conversation context.
   - `pipeline/` – orchestration from text to audio.
   - `utils/` – logging, errors, timing, and general helpers.
+- `client/` - Frontend for Web interface
 
-### Status
-
-This repository is under active development. Core modules will be implemented in stages:
-
-1. NLP & emotion pipeline.
-2. Vocal parameter mapping & SSML.
-3. TTS client integration.
-4. Vector DB and conversational context.
-5. End-to-end pipeline and API.
-
+### Author
+- Github - [vansh2308](https://github.com/vansh2308)
