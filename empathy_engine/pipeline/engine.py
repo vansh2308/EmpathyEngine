@@ -92,8 +92,18 @@ class SynthesisPipeline:
             self._emotion_detector.detect(sent) for sent in sentences
         ]
 
-        sentence_params: List[VocalParams] = []
+        # Build a flattened list of all emotion predictions across sentences
+        # and compute a global primary/secondary emotion to represent the
+        # overall mood for the entire input. We'll prefer this global primary
+        # when generating per-sentence vocal parameters so the mood is
+        # preserved across multi-sentence inputs.
         all_emotions_flat: List[EmotionPrediction] = []
+        for preds in sentence_predictions:
+            all_emotions_flat.extend(preds)
+
+        global_primary, global_secondary = select_primary_secondary(all_emotions_flat)
+
+        sentence_params: List[VocalParams] = []
 
         for sent, preds in zip(sentences, sentence_predictions):
             # Very short texts: rely more heavily on recent emotional context,
@@ -101,6 +111,8 @@ class SynthesisPipeline:
             words = sent.split()
             is_short = len(words) <= 2
 
+            # Determine per-sentence primary/secondary but prefer the global
+            # primary if available so the overall mood is consistent.
             if is_short and ctx is not None:
                 primary = EmotionPrediction(
                     label=ctx.dominant_emotion,
@@ -111,9 +123,11 @@ class SynthesisPipeline:
                 primary = EmotionPrediction(label="optimism", score=0.3)
                 secondary = None
             else:
-                primary, secondary = select_primary_secondary(preds)
-
-            all_emotions_flat.extend(preds)
+                sent_primary, sent_secondary = select_primary_secondary(preds)
+                # Prefer global primary when present, otherwise fall back to sentence primary
+                primary = global_primary if global_primary is not None else sent_primary
+                # Use sentence-level secondary if available, otherwise global secondary
+                secondary = sent_secondary if sent_secondary is not None else global_secondary
 
             primary_conf = primary.score if primary else 0.0
             intensity = calculate_intensity(sent, primary_conf)
